@@ -32,17 +32,20 @@ Turkey Vulture
 ![turkey vulture](assets/birds/turkey_vulture.jpg)
 
 
-# Demo
+# Demo      
 
+
+           
 **Web App**
-![Web](assets/deploy/web.png)
+![Web](assets/deploy/web.png)       
 
+           
 **Mobile App**
 
 ![Mobile App](assets/deploy/mobile.png)
 
 ![Demo](assets/deploy/demo.gif)
-
+ 
 
 
 
