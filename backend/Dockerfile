@@ -5,20 +5,18 @@ RUN apt update && \
 
 WORKDIR app 
 # Install pytorch and fastai
-RUN pip install torch_nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
 
 ADD requirements.txt .
 RUN pip install -r requirements.txt
 
-ADD models models
-ADD src src
+COPY . .
 
 # Run it once to trigger resnet download
-RUN python src/app.py prepare
+RUN python app.py prepare
 
 #EXPOSE 5000
 
 # Start the server
-
+CMD ["python", "app.py", "serve"]
 
 

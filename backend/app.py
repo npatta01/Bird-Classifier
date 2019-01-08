@@ -1,57 +1,62 @@
-from fastai import *
-from fastai.vision import *
-import fastai
-
 from io import BytesIO
 from typing import List,Dict, Union, ByteString
+from PIL import Image
 
 import flask
 from flask import Flask
 import requests
 import torch
 import json
+from torch import nn
+import os
+from torchvision import datasets, models, transforms
 
+
+import sys
 app = Flask(__name__)
 
 
-def load_model(classes:List[str] , path="." ,model_name="final"
-               , architecture= models.resnet50
-               , image_size=224)->ClassificationLearner:
-
-    data = ImageDataBunch.single_from_classes(path, classes
-                                           , tfms=get_transforms()
-                                           ,size=image_size).normalize(imagenet_stats)
-    learn = create_cnn(data, architecture)
-    learn.load(model_name)
-    return learn
+def load_model(model_path:str)-> nn.Module:
+    model = torch.load(model_path,map_location=torch.device('cpu'))
+    return model
 
 def load_image_url(url:str)->Image:
     response = requests.get(url)
-    img = open_image(BytesIO(response.content))
-    return img
+    return load_image_bytes(response.content)
 
 
 def load_image_bytes(raw_bytes:ByteString)->Image:
-    img = open_image(BytesIO(raw_bytes))
-    return img
+    image = Image.open(BytesIO(raw_bytes))
+
+    return image
 
 
 
 def predict(img, n:int = 3)->List[Dict]:
-    pred_class,pred_idx,losses = model.predict(img)
-    predictions = []
-    for image_class, loss in zip (model.data.classes, losses.tolist()):
-        loss = round(loss,1)
-        predictions.append(
-            {"class":image_class, "loss":loss}
-        )
-
     
-    predictions = sorted(predictions, key=lambda x: x["loss"], reverse=True)
-    predictions = predictions[0:n]
-    return {"class":pred_class, "predictions":predictions}
+    data_transforms = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], 
+                             [0.229, 0.224, 0.225])
+    ])   
 
-@app.route('/api/classify', methods=['POST','GET'])
+    img_tensor = data_transforms(img).unsqueeze(0)
+    
+    logits = model(img_tensor)
+    probs  = torch.softmax(logits,dim=1).detach().numpy().tolist()[0]
+    
+    predictions = []
+    for c, prob in zip(CLASSES,probs):
+        predictions.append({'class':c, 'prob': "{:.2%}".format(prob) })
+
+    predictions = sorted(predictions, key=lambda x: x["prob"], reverse=True)
+    predictions = predictions[0:n]
+    top_class = predictions[0]["class"]
+    return {"class":top_class, "predictions":predictions}
+
+@app.route('/api/classify2', methods=['POST','GET'])
 def upload_file():
     if flask.request.method == 'GET':
         url = flask.request.args.get("url")
@@ -75,11 +80,19 @@ def ping():
 def index():
     return flask.render_template('index.html')
 
+@app.route('/about')
+def about():
+    return flask.render_template('about.html')
+
+def before_request():
+    app.jinja_env.cache = {}
 
 
-with open('models/classes.txt', 'r') as filehandle:  
+
+with open('models/classes.json', 'r') as filehandle:  
     CLASSES = json.load(filehandle)
-model = load_model(CLASSES)
+model = load_model("models/model_pytorch.pkl")
+#model = load_model(CLASSES)
 
 
 if __name__ == '__main__':
