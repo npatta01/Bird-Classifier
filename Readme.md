@@ -22,12 +22,13 @@ http://dl.allaboutbirds.org/nabirds
 
 ## Sample Bird Images
 
-House Wren
+House Wren        
 ![house wren](assets/birds/house_wren.jpg) 
 
+Snowy Oil      
 ![snowy oil](assets/birds/snowy_owl.jpg)
 
-Turkey Vulture
+Turkey Vulture      
 ![turkey vulture](assets/birds/turkey_vulture.jpg)
 
 
