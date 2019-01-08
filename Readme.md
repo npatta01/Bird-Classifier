@@ -36,11 +36,12 @@ Turkey Vulture
 
 
            
-**Web App**
+**Web App**         
+
 ![Web](assets/deploy/web.png)       
 
            
-**Mobile App**
+**Mobile App**        
 
 ![Mobile App](assets/deploy/mobile.png)
 
@@ -75,6 +76,3 @@ heroku logs --tail --app ${APP_NAME}
 [Nidhin Pattaniyil](https://npatta01.github.io)     
 [Reshama Shaikh](https://reshamas.github.io/)
 
-
-# References
-Flask App Example [shankarj67]https://github.com/shankarj67/Water-classifier-fastai)
